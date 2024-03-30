@@ -4,10 +4,10 @@ export const content = ['./src/**/*.{js,jsx}', './index.html'];
 export const theme = {
     extend: {
         colors: {
-            primary: '#007F73', // Set the default primary color
-            secondary: '#4CCD99', // Set the default secondary color
-            tertiary: '#FFC700', // Set the default tertiary color
-            quaternary: '#FFF455', // Set the default quaternary color
+            primary: '#195B00', // Set the default primary color
+            secondary: '#0F3E00', // Set the default secondary color
+            tertiary: '#86A789', // Set the default tertiary color
+            quaternary: '#bec3bf', // Set the default quaternary color
         },
         fontSize: {
             headingText: 'clamp(2rem, 1.2500rem + 3.3333vw, 3rem);',

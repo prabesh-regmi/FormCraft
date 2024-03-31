@@ -1,20 +1,18 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import { useEffect, useState } from "react";
-import classnames from "classnames";
 import { useForm } from "react-hook-form";
 import { useNavigate, NavLink } from "react-router-dom";
-import "react-phone-number-input/style.css";
-import PhoneInputWithCountry from "react-phone-number-input/react-hook-form";
-import { isValidPhoneNumber } from "react-phone-number-input";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import { useDispatch, useSelector } from "react-redux";
-
-import { SpinnerIcon } from "~/assets/Svg";
-import { RegisterHandler } from "~/services/handlers/RegisterHandler";
+import { registerHandler } from "../../../services";
+import SubmitSpinner from "../../../components/common/SubmitSpinner";
+import ErrorMessage from "../../../components/common/ErrorMessage";
+import { login } from "../../../redux/slices/login/loginSlice";
 
 function SignUp() {
   const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isAuthenticated } = useSelector((store) => store.login);
@@ -28,7 +26,6 @@ function SignUp() {
     handleSubmit,
     reset,
     getValues,
-    control,
     formState: { errors },
   } = useForm();
   const [passwordShown, setPasswordShown] = useState(false);
@@ -37,17 +34,17 @@ function SignUp() {
     const password = getValues("password");
     return value === password || "Passwords do not match";
   };
-  const validatePhoneNumber = (value) =>
-    isValidPhoneNumber(value) || "Invalid phone number";
-  const redBorder = classnames("border border-red-600 bg-red-50");
-
-  const OnSubmit = async (payload) => {
+  const onSubmit = async (payload) => {
+    setMessage("");
     setIsLoading(true);
-    const registered = await RegisterHandler(dispatch, payload);
-    if (registered) {
-      navigate("/");
+    const user = await registerHandler(payload);
+    if (user.id) {
+      dispatch(login({ user }));
       reset();
+      setIsLoading(false);
+      navigate("/");
     }
+    setMessage(user.message);
     setIsLoading(false);
   };
   return (
@@ -60,82 +57,32 @@ function SignUp() {
             </h1>
             <form
               className="space-y-4 md:space-y-7"
-              onSubmit={handleSubmit(OnSubmit)}
+              onSubmit={handleSubmit(onSubmit)}
             >
-              <div className="w-full flex flex-col gap-3 sm:flex-row">
-                <div className="basis-1/2">
-                  <label
-                    htmlFor="firstName"
-                    className="block mb-2 text-sm font-medium text-gray-900"
-                  >
-                    First Name
-                    <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="firstName"
-                    name="firstName"
-                    className={`bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 ${
-                      errors.firstName ? redBorder : ""
-                    }`}
-                    placeholder="Enter you First Name"
-                    {...register("firstName", {
-                      required: "First Name cannot be empty",
-                    })}
-                  />
-                  {errors.firstName && (
-                    <p className="text-red-600 text-sm pt-1">
-                      {errors.firstName.message}
-                    </p>
-                  )}
-                </div>
-                <div className="basis-1/2">
-                  <label
-                    htmlFor="lastName"
-                    className="block mb-2 text-sm font-medium text-gray-900"
-                  >
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    id="lastName"
-                    name="lastName"
-                    className={`bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 ${
-                      errors.lastName ? redBorder : ""
-                    }`}
-                    placeholder="Enter you Last Name"
-                    {...register("lastName")}
-                  />
-                  {errors.lastName && (
-                    <p className="text-red-600 text-sm pt-1">
-                      {errors.lastName.message}
-                    </p>
-                  )}
-                </div>
-              </div>
               <div>
                 <label
-                  htmlFor="username"
+                  htmlFor="name"
                   className="block mb-2 text-sm font-medium text-gray-900"
                 >
-                  Username
+                  Full Name
                   <span className="text-red-600">*</span>
                 </label>
                 <input
                   type="text"
-                  id="username"
-                  name="username"
+                  id="name"
+                  name="name"
                   className={`bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 ${
-                    errors.username ? redBorder : ""
+                    errors.name ? "border-red-300" : ""
                   }`}
-                  placeholder="Enter your username"
-                  {...register("username", {
-                    required: "Username cannot be empty",
+                  placeholder="Enter you Full Name"
+                  autoComplete="name"
+                  {...register("name", {
+                    required: "Full Name cannot be empty",
                   })}
                 />
-                {errors.username && (
+                {errors.name && (
                   <p className="text-red-600 text-sm pt-1">
-                    {errors.username.message}
+                    {errors.name.message}
                   </p>
                 )}
               </div>
@@ -152,9 +99,10 @@ function SignUp() {
                   id="email"
                   name="email"
                   className={`bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 ${
-                    errors.email ? redBorder : ""
+                    errors.email ? "border-red-300" : ""
                   }`}
                   placeholder="name@company.com"
+                  autoComplete="email"
                   {...register("email", {
                     required: "Email cannot be empty",
                   })}
@@ -162,30 +110,6 @@ function SignUp() {
                 {errors.email && (
                   <p className="text-red-600 text-sm pt-1">
                     {errors.email.message}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label
-                  htmlFor="phoneNumber"
-                  className="block mb-2 text-sm font-medium text-gray-900"
-                >
-                  Phone Number
-                  <span className="text-red-600">*</span>
-                </label>
-                <PhoneInputWithCountry
-                  placeholder="Enter phone number"
-                  name="phoneNumber"
-                  defaultCountry="NP"
-                  control={control}
-                  rules={{
-                    required: "Phone Number cannot be empty",
-                    validate: validatePhoneNumber,
-                  }}
-                />
-                {errors.phoneNumber && (
-                  <p className="text-red-600 text-sm pt-1">
-                    {errors.phoneNumber.message}
                   </p>
                 )}
               </div>
@@ -203,9 +127,10 @@ function SignUp() {
                     id="password"
                     name="password"
                     className={`bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 ${
-                      errors.password ? redBorder : ""
+                      errors.password ? "border-red-300" : ""
                     }`}
                     placeholder="Enter your Password"
+                    autoComplete="password1"
                     {...register("password", {
                       required: "Password cannot be empty",
                     })}
@@ -233,7 +158,6 @@ function SignUp() {
                   </p>
                 )}
               </div>
-
               <div>
                 <label
                   htmlFor="password"
@@ -248,9 +172,10 @@ function SignUp() {
                     id="confirmPassword"
                     name="confirmPassword"
                     className={`bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 ${
-                      errors.confirmPassword ? redBorder : ""
+                      errors.confirmPassword ? "border-red-300" : ""
                     }`}
                     placeholder="Re Enter you Password"
+                    autoComplete="password2"
                     {...register("confirmPassword", {
                       required: "Confirm Password cannot be empty",
                       validate: validatePasswordMatch,
@@ -279,6 +204,26 @@ function SignUp() {
                   </p>
                 )}
               </div>
+              <div>
+                <label
+                  htmlFor="role"
+                  className="block mb-2 text-sm font-medium text-gray-900"
+                >
+                  Role
+                  <span className="text-red-600">*</span>
+                </label>
+                <select
+                  {...register("role", { required: true })}
+                  className={`bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 ${
+                    errors.email ? "border-red-300" : ""
+                  }`}
+                >
+                  <option value="">Select a role</option>
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+                {errors.role && <ErrorMessage message={errors.role.message} />}
+              </div>
               <div className="flex items-start">
                 <div className="flex items-center h-5">
                   <input
@@ -286,9 +231,7 @@ function SignUp() {
                     aria-describedby="terms"
                     type="checkbox"
                     className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300"
-                    {...register("terms", {
-                      required: "You must accept the terms and conditions",
-                    })}
+                    required
                   />
                 </div>
                 <div className="ml-3 text-sm">
@@ -297,6 +240,11 @@ function SignUp() {
                   </label>
                 </div>
               </div>
+              {message && (
+                <div className="my-4">
+                  <ErrorMessage message={message} />
+                </div>
+              )}
               <button
                 type="submit"
                 disabled={isLoading}
@@ -304,7 +252,7 @@ function SignUp() {
               >
                 {isLoading ? (
                   <div className="flex justify-center">
-                    <SpinnerIcon className="w-8 animate-spin text-white" />
+                    <SubmitSpinner />
                   </div>
                 ) : (
                   <span>Create an account</span>

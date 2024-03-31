@@ -1,14 +1,14 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate, NavLink } from "react-router-dom";
+import { useNavigate, NavLink, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
-import { loginHandler } from "~/services/handlers/LoginHandler";
-import { SpinnerIcon } from "~/assets/Svg";
-import Loading from "~/components/common/Loading";
-import { FacebookLoginBtn, GoogleLoginBtn } from "./OAuth";
+import SubmitSpinner from "../../../components/common/SubmitSpinner";
+import ErrorMessage from "../../../components/common/ErrorMessage";
+import { login } from "../../../redux/slices/login/loginSlice";
+import { handleLogin } from "../../../services";
 
 function LoginPage() {
   const [isLogging, setIsLogging] = useState(false);
@@ -33,14 +33,11 @@ function LoginPage() {
 
   const OnSubmit = async (payload) => {
     setIsLogging(true);
-    const user = await loginHandler(dispatch, payload);
+    const user = await handleLogin(payload);
     if (user) {
+      dispatch(login({ user }));
       reset();
-      if (user.role === "user") {
-        navigate(-1);
-      } else {
-        navigate("/admin/dashboard");
-      }
+      navigate(-1);
     }
     setIsLogging(false);
   };
@@ -52,14 +49,6 @@ function LoginPage() {
             <h1 className="text-2xl font-bold leading-tight tracking-tight text-center text-gray-900 text-purple-800 uppercase md:text-2xl">
               Welcome back
             </h1>
-            <div className="flex flex-col justify-between gap-3 login-with xs:flex-row xs:gap-2 ">
-              <div className="flex-grow hidden">
-                <GoogleLoginBtn setLoading={setIsLogging} />
-              </div>
-              <div className="flex-grow hidden">
-                <FacebookLoginBtn setLoading={setIsLogging} />
-              </div>
-            </div>
             <form
               className="space-y-4 md:space-y-6"
               onSubmit={handleSubmit(OnSubmit)}
@@ -76,14 +65,15 @@ function LoginPage() {
                   type="email"
                   id="email"
                   name="email"
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-bodyText rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-bodyText rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5"
                   placeholder="name@company.com"
+                  autoComplete="email"
                   {...register("email", {
                     required: "Email cannot be empty",
                   })}
                 />
                 {errors.email && (
-                  <p className="text-red-600">{errors.email.message}</p>
+                  <ErrorMessage message={errors.email.message} />
                 )}
               </div>
               <div>
@@ -99,12 +89,12 @@ function LoginPage() {
                     type={passwordShown ? "text" : "password"}
                     id="password"
                     name="password"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-bodyText rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-bodyText rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5"
                     placeholder="Enter your Password"
                     {...register("password", {
                       required: "Password cannot be empty",
                     })}
-                    // className="z-10"
+                    autoComplete="current-password"
                   />
 
                   <div className="absolute right-0 flex items-center justify-center h-full mr-3">
@@ -116,7 +106,7 @@ function LoginPage() {
                   </div>
                 </div>
                 {errors.password && (
-                  <p className="text-red-600">{errors.password.message}</p>
+                  <p className="error-message">{errors.password.message}</p>
                 )}
               </div>
               <div className="flex items-center justify-between">
@@ -126,29 +116,28 @@ function LoginPage() {
                       id="remember"
                       aria-describedby="remember"
                       type="checkbox"
-                      className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300"
-                      required
+                      className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary"
                     />
                   </div>
                   <div className="ml-3 text-sm">
                     <p className="text-gray-500 ">Remember me</p>
                   </div>
                 </div>
-                <NavLink
-                  className="text-sm font-medium text-primary-600 hover:underline"
+                <Link
+                  className="text-sm font-medium text-primary hover:underline"
                   to="/login"
                 >
                   Forgot password?
-                </NavLink>
+                </Link>
               </div>
               <button
                 type="submit"
                 disabled={isLogging}
-                className="w-full disabled:cursor-not-allowed text-white h-12 bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center btn-primary"
+                className="w-full disabled:cursor-not-allowed text-white h-12 bg-primary-600 font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-primary hover:bg-white hover:text-primary border border-2 border-primary"
               >
                 {isLogging ? (
                   <div className="flex justify-center">
-                    <SpinnerIcon className="w-8 text-white animate-spin" />
+                    <SubmitSpinner className="w-8 text-white animate-spin" />
                   </div>
                 ) : (
                   <span>Sign in</span>
@@ -157,7 +146,7 @@ function LoginPage() {
               <p className="text-sm font-light text-gray-500">
                 Don&apos;t have an account yet?
                 <NavLink
-                  className="ml-1 text-sm font-medium text-blue-500 hover:underline hover:text-blue-700"
+                  className="ml-1 text-sm font-medium text-primary hover:underline hover:text-blue-700"
                   to="/register"
                 >
                   SignUp
@@ -167,7 +156,6 @@ function LoginPage() {
           </div>
         </div>
       </div>
-      {isLogging && <Loading />}
     </section>
   );
 }

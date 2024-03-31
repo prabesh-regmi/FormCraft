@@ -5,10 +5,10 @@ import { useNavigate, NavLink, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
-import SubmitSpinner from '../../../components/common/SubmitSpinner'
-import ErrorMessage from '../../../components/common/ErrorMessage'
-import { login } from '../../../redux/slices/login/loginSlice';
-import { handleLogin } from '../../../services';
+import SubmitSpinner from "../../../components/common/SubmitSpinner";
+import ErrorMessage from "../../../components/common/ErrorMessage";
+import { login } from "../../../redux/slices/login/loginSlice";
+import { handleLogin } from "../../../services";
 
 function LoginPage() {
     const [isLogging, setIsLogging] = useState(false);
@@ -18,7 +18,7 @@ function LoginPage() {
     const { isAuthenticated } = useSelector((store) => store.login);
     useEffect(() => {
         if (isAuthenticated) {
-        navigate("/");
+            navigate("/");
         }
     }, []);
     const handleToggle = () => {
@@ -35,13 +35,9 @@ function LoginPage() {
         setIsLogging(true);
         const user = await handleLogin(payload);
         if (user) {
-          dispatch(login({ user }));
+            dispatch(login({ user }));
             reset();
-            if (user.role === "user") {
-                navigate(-1);
-            } else {
-                navigate("/admin/dashboard");
-            }
+            navigate(-1);
         }
         setIsLogging(false);
     };
@@ -77,7 +73,9 @@ function LoginPage() {
                                     })}
                                 />
                                 {errors.email && (
-                                    <ErrorMessage message={errors.email.message}/>
+                                    <ErrorMessage
+                                        message={errors.email.message}
+                                    />
                                 )}
                             </div>
                             <div>

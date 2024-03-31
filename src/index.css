@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 .btn {
-    @apply px-8 py-2 pt-3 text-sm font-bold border border-transparent;
+    @apply px-8 py-2 text-sm font-bold border;
 }
 .btn-sm {
     @apply px-5 py-1 text-sm;

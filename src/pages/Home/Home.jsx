@@ -1,69 +1,71 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
-import { getForms } from "../../services/handleGetRequest";
+import { getForms, deleteForm } from "../../services";
 import FormList from "../../components/FormList/FormList";
+import ModalTemplateWithArgs from "../../components/common/modal/ModalTemplateWithArgs";
+import DeleteConformationModal from "../../components/common/modal/DeleteConformation";
 // import FormBuilder from "../../components/FormBuilder/FormBuilder";
 
 function Home() {
-    const [forms, setForms] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const fetchData = async () => {
-        setIsLoading(true);
-        const forms = await getForms();
-        setForms(forms);
-        setIsLoading(false);
-    };
-    useEffect(() => {
-        fetchData();
-    }, []);
-    // const testForm = {
-    //     name: "Test Form",
-    //     inputs: [
-    //         {
-    //             name: "name",
-    //             label: "Product Name",
-    //             type: "textArea",
-    //             placeholder: "Enter Product name",
-    //             required: true,
-    //         },
-    //         {
-    //             name: "dob",
-    //             label: "Date of birth",
-    //             type: "date",
-    //             placeholder: "Enter Date of birth",
-    //             required: true,
-    //         },
-    //         {
-    //             name: "isNew",
-    //             label: "Is New",
-    //             type: "checkbox",
-    //         },
-    //         {
-    //             name: "animal",
-    //             label: "Choose Animal",
-    //             type: "select",
-    //             required: true,
-    //             options: [
-    //                 {
-    //                     value: "tiger",
-    //                     label: "Tiger",
-    //                 },
-    //                 {
-    //                     value: "elephant",
-    //                     label: "elephant",
-    //                 },
-    //             ],
-    //         },
-    //     ],
-    // };
-    const defaultValue = { name: "Prabesh Regmi", animal: "tiger" };
-    return (
-        <div className="max-w-5xl mx-auto my-10 px-4">
-            <h1 className="text-2xl my-2">Forms:</h1>
-            {isLoading ? <LoadingSpinner /> : <FormList forms={forms} />}
-            {/* <FormBuilder form={testForm} defaultValues={defaultValue} /> */}
-        </div>
-    );
+  const [forms, setForms] = useState([]);
+  const [deleteItem, setDeleteItem] = useState();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { user } = useSelector((state) => state.login);
+  const fetchData = async () => {
+    setIsLoading(true);
+    const forms = await getForms();
+    setForms(forms);
+    setIsLoading(false);
+  };
+  const handleFormDeleteClick = async (id) => {
+    setDeleteItem(id);
+  };
+  const onDelete = async () => {
+    setIsDeleting(true);
+    const deleted = await deleteForm(deleteItem);
+    if (deleted) {
+      setDeleteItem("");
+      fetchData();
+    }
+    setIsDeleting(false);
+  };
+  const onDeleteCancel = () => {
+    setDeleteItem("");
+  };
+  useEffect(() => {
+    fetchData();
+  }, []);
+  return (
+    <div className="max-w-5xl mx-auto my-10 px-4">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl my-2">Forms:</h1>
+        {user?.role === "admin" && (
+          <Link to="/form/create" className="btn btn-sm btn-primary rounded">
+            Create Form
+          </Link>
+        )}
+      </div>
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : (
+        <FormList forms={forms} handleDelete={handleFormDeleteClick} />
+      )}
+      <ModalTemplateWithArgs
+        isOpen={!!deleteItem}
+        width="w-md"
+        onClose={onDeleteCancel}
+      >
+        <DeleteConformationModal
+          onConfirm={onDelete}
+          onCancel={onDeleteCancel}
+          isLoading={isDeleting}
+        />
+      </ModalTemplateWithArgs>
+    </div>
+  );
 }
 
 export default Home;

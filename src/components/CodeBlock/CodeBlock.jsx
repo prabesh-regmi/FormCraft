@@ -1,12 +1,13 @@
-import { CopyBlock, dracula } from "react-code-blocks";
+import ReactJson from "react-json-view";
 
-function CodeBlock({ code, language = "json", showLineNumbers = true }) {
-    <CopyBlock
-        text={code}
-        language={language}
-        showLineNumbers={showLineNumbers}
-        theme={dracula}
-        codeBlock
-    />;
+function CodeBlock({ code }) {
+  return (
+    <ReactJson
+      src={code}
+      theme="monokai"
+      collapsed={false}
+      displayDataTypes={false}
+    />
+  );
 }
 export default CodeBlock;

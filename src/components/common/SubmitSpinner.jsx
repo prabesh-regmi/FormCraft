@@ -1,4 +1,4 @@
-const SubmitSpinner = () => {
+function SubmitSpinner() {
   return (
     <svg
       aria-hidden="true"
@@ -18,5 +18,5 @@ const SubmitSpinner = () => {
       />
     </svg>
   );
-};
+}
 export default SubmitSpinner;

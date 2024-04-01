@@ -12,6 +12,7 @@ import { handleLogin } from "../../../services";
 
 function LoginPage() {
   const [isLogging, setIsLogging] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [passwordShown, setPasswordShown] = useState(false);
@@ -34,11 +35,12 @@ function LoginPage() {
   const OnSubmit = async (payload) => {
     setIsLogging(true);
     const user = await handleLogin(payload);
-    if (user) {
+    if (user.id) {
       dispatch(login({ user }));
       reset();
       navigate(-1);
     }
+    setErrorMessage(user.message);
     setIsLogging(false);
   };
   return (
@@ -130,6 +132,7 @@ function LoginPage() {
                   Forgot password?
                 </Link>
               </div>
+              {errorMessage && <ErrorMessage message={errorMessage} />}
               <button
                 type="submit"
                 disabled={isLogging}
